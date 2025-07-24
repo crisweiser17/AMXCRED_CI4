@@ -556,10 +556,19 @@ document.addEventListener('DOMContentLoaded', function() {
         submitButton.disabled = true;
         submitText.textContent = 'Cadastrando...';
         
-        // Converter renda mensal para formato decimal
+        // Converter renda mensal para formato decimal (apenas se não estiver vazio)
         const monthlyIncome = monthlyIncomeInput.value;
-        if (monthlyIncome) {
-            monthlyIncomeInput.value = monthlyIncome.replace(/\./g, '').replace(',', '.');
+        if (monthlyIncome && monthlyIncome.trim() !== '') {
+            // Remover formatação e converter para decimal
+            let numericValue = monthlyIncome.replace(/\./g, '').replace(',', '.');
+            // Se o valor já foi processado pela máscara (tem vírgula), não dividir por 100 novamente
+            if (monthlyIncome.includes(',')) {
+                numericValue = monthlyIncome.replace(/\./g, '').replace(',', '.');
+            } else {
+                // Se é um valor puro (sem formatação), manter como está
+                numericValue = monthlyIncome;
+            }
+            monthlyIncomeInput.value = numericValue;
         }
     });
 });

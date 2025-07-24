@@ -685,11 +685,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const submitText = document.getElementById('submit-text');
 
     form.addEventListener('submit', function(e) {
-        console.log('Form submit event triggered');
-        
         // Validar CPF
         const cpf = cpfInput.value;
-        console.log('CPF value:', cpf);
         if (cpf && cpf.length > 0 && !validarCPF(cpf)) {
             e.preventDefault();
             alert('Por favor, insira um CPF válido.');
@@ -700,11 +697,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Validar campos PIX usando o handler reutilizável (apenas se preenchidos)
         if (window.pixFieldsHandler) {
             const pixValues = window.pixFieldsHandler.getValues();
-            console.log('PIX values:', pixValues);
             // Só valida se pelo menos um campo PIX foi preenchido
             if (pixValues.pixKeyType || pixValues.pixKey) {
                 const pixValidation = window.pixFieldsHandler.validate();
-                console.log('PIX validation:', pixValidation);
                 if (!pixValidation.isValid) {
                     e.preventDefault();
                     alert('Erro nos campos PIX: ' + pixValidation.errors.join(', '));
@@ -713,19 +708,24 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Converter renda mensal para formato decimal
+        // Converter renda mensal para formato decimal (apenas se não estiver vazio)
         const monthlyIncome = monthlyIncomeInput.value;
-        if (monthlyIncome) {
-            console.log('Monthly income before conversion:', monthlyIncome);
-            monthlyIncomeInput.value = monthlyIncome.replace(/\./g, '').replace(',', '.');
-            console.log('Monthly income after conversion:', monthlyIncomeInput.value);
+        if (monthlyIncome && monthlyIncome.trim() !== '') {
+            // Remover formatação e converter para decimal
+            let numericValue = monthlyIncome.replace(/\./g, '').replace(',', '.');
+            // Se o valor já foi processado pela máscara (tem vírgula), não dividir por 100 novamente
+            if (monthlyIncome.includes(',')) {
+                numericValue = monthlyIncome.replace(/\./g, '').replace(',', '.');
+            } else {
+                // Se é um valor puro (sem formatação), manter como está
+                numericValue = monthlyIncome;
+            }
+            monthlyIncomeInput.value = numericValue;
         }
 
         // Mostrar loading no botão
         submitButton.disabled = true;
         submitText.textContent = 'Atualizando...';
-        
-        console.log('Form validation passed, submitting...');
     });
 
     // Funções globais para manipulação de documentos
