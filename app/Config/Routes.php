@@ -12,10 +12,16 @@ $routes->get('/dashboard', 'Home::dashboard');
 $routes->get('/clients', 'ClientController::index');
 $routes->get('/clients/create', 'ClientController::create');
 $routes->post('/clients/store', 'ClientController::store');
+$routes->get('/clients/view/(:num)', 'ClientController::view/$1');
 $routes->get('/clients/edit/(:num)', 'ClientController::edit/$1');
 $routes->put('/clients/update/(:num)', 'ClientController::update/$1');
 $routes->post('/clients/update/(:num)', 'ClientController::update/$1');
 $routes->delete('/clients/delete/(:num)', 'ClientController::delete/$1');
+$routes->get('/clients/verify/(:num)', 'ClientController::verify/$1');
+$routes->post('/clients/verify/visual/(:num)', 'ClientController::verifyVisual/$1');
+$routes->post('/clients/verify/cpf/(:num)', 'ClientController::verifyCpf/$1');
+$routes->post('/clients/verify/risk/(:num)', 'ClientController::verifyRisk/$1');
+$routes->post('/clients/update-from-api/(:num)', 'ClientController::updateFromApi/$1');
 
 // Rotas de Documentos
 $routes->group('documents', function($routes) {
@@ -32,7 +38,15 @@ $routes->group('settings', function($routes) {
     $routes->post('update-required-fields', 'SettingsController::updateRequiredFields');
     $routes->get('get-setting', 'SettingsController::getSetting');
     $routes->post('set-setting', 'SettingsController::setSetting');
+    $routes->get('cpf-api', 'SettingsController::cpfApi');
+    $routes->post('save-cpf-api', 'SettingsController::saveCpfApi');
+    $routes->post('test-cpf-api', 'SettingsController::testCpfApi');
     $routes->get('smtp', 'SettingsController::smtp');
     $routes->get('colors', 'SettingsController::colors');
     $routes->get('payment', 'SettingsController::payment');
 });
+
+// Rotas Públicas (sem autenticação)
+$routes->get('/register', 'PublicController::register');
+$routes->post('/register/store', 'PublicController::store');
+$routes->get('/register/success', 'PublicController::success');

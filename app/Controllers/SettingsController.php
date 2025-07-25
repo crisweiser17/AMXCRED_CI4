@@ -155,6 +155,89 @@ class SettingsController extends BaseController
     }
 
     /**
+     * Configurações da API CPF
+     */
+    public function cpfApi()
+    {
+        // Buscar configurações atuais da API CPF
+        $settings = [
+            'cpf_api_environment' => $this->settingModel->getSetting('cpf_api', 'cpf_api_environment') ?? 'test',
+            'cpf_api_test_token' => $this->settingModel->getSetting('cpf_api', 'cpf_api_test_token') ?? '',
+            'cpf_api_production_token' => $this->settingModel->getSetting('cpf_api', 'cpf_api_production_token') ?? '',
+            'cpf_api_test_url' => $this->settingModel->getSetting('cpf_api', 'cpf_api_test_url') ?? 'https://api.cpfcnpj.com.br/test',
+            'cpf_api_production_url' => $this->settingModel->getSetting('cpf_api', 'cpf_api_production_url') ?? 'https://api.cpfcnpj.com.br'
+        ];
+
+        $data = [
+            'title' => 'Configurações da API CPF',
+            'settings' => $settings
+        ];
+
+        return view('settings/cpf_api', $data);
+    }
+
+    /**
+     * Salva configurações da API CPF
+     */
+    public function saveCpfApi()
+    {
+        $settings = [
+            'cpf_api_environment' => $this->request->getPost('cpf_api_environment'),
+            'cpf_api_test_token' => $this->request->getPost('cpf_api_test_token'),
+            'cpf_api_production_token' => $this->request->getPost('cpf_api_production_token'),
+            'cpf_api_test_url' => $this->request->getPost('cpf_api_test_url'),
+            'cpf_api_production_url' => $this->request->getPost('cpf_api_production_url')
+        ];
+
+        $success = true;
+        foreach ($settings as $key => $value) {
+            if (!$this->settingModel->setSetting('cpf_api', $key, $value)) {
+                $success = false;
+                break;
+            }
+        }
+
+        return $this->response->setJSON([
+            'success' => $success,
+            'message' => $success ? 'Configurações salvas com sucesso!' : 'Erro ao salvar configurações'
+        ]);
+    }
+
+    /**
+     * Testa conexão com a API CPF
+     */
+    public function testCpfApi()
+    {
+        try {
+            // Usar um CPF de teste conhecido
+            $testCpf = '11144477735'; // CPF de teste padrão
+            
+            // Instanciar o ClientController para usar o método de consulta
+            $clientController = new \App\Controllers\ClientController();
+            
+            // Usar reflection para acessar o método privado
+            $reflection = new \ReflectionClass($clientController);
+            $method = $reflection->getMethod('consultCpfApi');
+            $method->setAccessible(true);
+            
+            // Executar a consulta
+            $result = $method->invoke($clientController, $testCpf);
+            
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => 'Conexão testada com sucesso! CPF consultado: ' . $testCpf,
+                'data' => $result
+            ]);
+            
+        } catch (\Exception $e) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Erro na conexão: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
      * Configurações de SMTP (placeholder para futuro)
      */
     public function smtp()
