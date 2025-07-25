@@ -35,24 +35,24 @@
         }
         
         .sidebar-collapsed {
-            width: 0;
+            width: 4rem !important;
             overflow: hidden;
         }
         .sidebar-expanded {
-            width: 16rem;
+            width: 16rem !important;
             max-width: 16rem;
         }
         .content-collapsed {
-            margin-left: 0;
+            margin-left: 4rem !important;
         }
         .content-expanded {
-            margin-left: 16rem;
+            margin-left: 16rem !important;
         }
         .sidebar-hidden {
-            transform: translateX(-100%);
+            transform: translateX(-100%) !important;
         }
         .sidebar-visible {
-            transform: translateX(0);
+            transform: translateX(0) !important;
         }
         .sidebar-text {
             opacity: 1;
@@ -120,29 +120,61 @@
     <!-- Custom JS -->
     <script>
         // Toggle sidebar
-        document.getElementById('sidebar-toggle')?.addEventListener('click', function() {
+        function initSidebarToggle() {
+            const toggleButton = document.getElementById('sidebar-toggle');
             const sidebar = document.getElementById('sidebar');
             const mainContent = document.getElementById('main-content');
             
-            if (window.innerWidth < 768) {
-                // Mobile: hide/show completely
-                sidebar.classList.toggle('sidebar-hidden');
-                sidebar.classList.toggle('sidebar-visible');
-            } else {
-                // Desktop: collapse/expand
-                if (sidebar.classList.contains('sidebar-expanded')) {
-                    sidebar.classList.remove('sidebar-expanded');
-                    sidebar.classList.add('sidebar-collapsed');
-                    mainContent.classList.remove('content-expanded');
-                    mainContent.classList.add('content-collapsed');
-                } else {
-                    sidebar.classList.remove('sidebar-collapsed');
-                    sidebar.classList.add('sidebar-expanded');
-                    mainContent.classList.remove('content-collapsed');
-                    mainContent.classList.add('content-expanded');
-                }
+            if (!toggleButton || !sidebar || !mainContent) {
+                console.error('Sidebar elements not found:', {
+                    toggleButton: !!toggleButton,
+                    sidebar: !!sidebar,
+                    mainContent: !!mainContent
+                });
+                return;
             }
-        });
+            
+            // Store initial state
+            let isCollapsed = false;
+            
+            toggleButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('Sidebar toggle clicked, current state:', isCollapsed);
+                
+                if (window.innerWidth < 768) {
+                    // Mobile: hide/show completely
+                    if (isCollapsed) {
+                        sidebar.classList.remove('sidebar-hidden');
+                        sidebar.classList.add('sidebar-visible');
+                        isCollapsed = false;
+                    } else {
+                        sidebar.classList.remove('sidebar-visible');
+                        sidebar.classList.add('sidebar-hidden');
+                        isCollapsed = true;
+                    }
+                    console.log('Mobile toggle applied, new state:', isCollapsed);
+                } else {
+                    // Desktop: collapse/expand
+                    if (isCollapsed) {
+                        // Expand
+                        sidebar.classList.remove('sidebar-collapsed');
+                        sidebar.classList.add('sidebar-expanded');
+                        mainContent.classList.remove('content-collapsed');
+                        mainContent.classList.add('content-expanded');
+                        isCollapsed = false;
+                        console.log('Sidebar expanded');
+                    } else {
+                        // Collapse
+                        sidebar.classList.remove('sidebar-expanded');
+                        sidebar.classList.add('sidebar-collapsed');
+                        mainContent.classList.remove('content-expanded');
+                        mainContent.classList.add('content-collapsed');
+                        isCollapsed = true;
+                        console.log('Sidebar collapsed');
+                    }
+                }
+            });
+        }
 
         // Toggle dropdown menus
         document.addEventListener('click', function(e) {
@@ -195,8 +227,16 @@
         window.addEventListener('load', function() {
             initSidebar();
             initDropdowns();
+            initSidebarToggle();
         });
         window.addEventListener('resize', initSidebar);
+        
+        // Also initialize when DOM is ready (fallback)
+        document.addEventListener('DOMContentLoaded', function() {
+            initSidebar();
+            initDropdowns();
+            initSidebarToggle();
+        });
     </script>
 </body>
 </html>
