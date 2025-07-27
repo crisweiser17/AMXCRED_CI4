@@ -44,7 +44,29 @@ $routes->group('settings', function($routes) {
     $routes->get('smtp', 'SettingsController::smtp');
     $routes->get('colors', 'SettingsController::colors');
     $routes->get('payment', 'SettingsController::payment');
+    
+    // Rotas para Planos de Empréstimo
+    $routes->get('loan-plans', 'SettingsController::loanPlans');
+    $routes->get('loan-plans/create', 'SettingsController::createLoanPlan');
+    $routes->post('loan-plans/store', 'SettingsController::storeLoanPlan');
+    $routes->get('loan-plans/view/(:num)', 'SettingsController::viewLoanPlan/$1');
+    $routes->get('loan-plans/edit/(:num)', 'SettingsController::editLoanPlan/$1');
+    $routes->post('loan-plans/update/(:num)', 'SettingsController::updateLoanPlan/$1');
+    $routes->put('loan-plans/update/(:num)', 'SettingsController::updateLoanPlan/$1');
+    $routes->post('loan-plans/toggle-status/(:num)', 'SettingsController::toggleLoanPlanStatus/$1');
+    $routes->delete('loan-plans/delete/(:num)', 'SettingsController::deleteLoanPlan/$1');
+    
+    // Rota de debug temporária
+    $routes->get('loan-plans/debug/(:num)', 'SettingsControllerDebug::viewLoanPlanDebug/$1');
 });
+
+// Rotas de Debug para Planos de Empréstimo
+$routes->get('/loan-plans-debug', 'LoanPlansController::index');
+$routes->get('/loan-plans-debug/view/(:num)', 'LoanPlansController::view/$1');
+
+// Rotas de Teste Absoluto (HTML estático)
+$routes->get('/loan-simple', 'LoanPlansSimple::index');
+$routes->get('/loan-simple/view/(:num)', 'LoanPlansSimple::view/$1');
 
 // Rotas Públicas (sem autenticação)
 $routes->get('/register', 'PublicController::register');

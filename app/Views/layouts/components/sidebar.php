@@ -14,7 +14,6 @@
         <!-- Navigation -->
         <nav class="space-y-2">
             <?php
-            $navigation = config('Navigation');
             $currentUrl = current_url();
             ?>
 
@@ -109,6 +108,12 @@
                         <a href="<?= base_url('/settings/payment') ?>"
                            class="flex items-center w-full p-2 text-gray-300 transition duration-75 rounded-lg pl-11 group hover:bg-gray-700 <?= strpos($currentUrl, '/settings/payment') !== false ? 'bg-blue-600 text-white' : '' ?>">
                             <span class="sidebar-text">Pagamentos</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?= base_url('/settings/loan-plans') ?>"
+                           class="flex items-center w-full p-2 text-gray-300 transition duration-75 rounded-lg pl-11 group hover:bg-gray-700 <?= strpos($currentUrl, '/settings/loan-plans') !== false ? 'bg-blue-600 text-white' : '' ?>">
+                            <span class="sidebar-text">Planos de Empréstimo</span>
                         </a>
                     </li>
                 </ul>
