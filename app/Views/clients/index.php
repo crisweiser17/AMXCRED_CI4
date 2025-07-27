@@ -18,9 +18,113 @@
         </div>
     </div>
 
-    <!-- Content -->
+    <!-- Filtros e Busca -->
+    <div class="bg-white shadow-sm rounded-lg mb-6">
+        <div class="p-6">
+            <form id="filters-form" class="space-y-4">
+                <!-- Linha 1: Busca e Botões -->
+                <div class="flex flex-col sm:flex-row gap-4 items-end">
+                    <div class="flex-1">
+                        <label for="search" class="block text-sm font-medium text-gray-700 mb-2">Buscar</label>
+                        <div class="relative">
+                            <input type="text" 
+                                   id="search" 
+                                   name="search" 
+                                   value="<?= esc($filters['search'] ?? '') ?>"
+                                   placeholder="Nome, CPF, email ou telefone..."
+                                   class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 ml-auto">
+                        <button type="button" id="clear-filters" class="px-6 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Limpar
+                        </button>
+                        <button type="submit" class="px-6 py-2 bg-blue-600 border border-transparent rounded-md text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Buscar
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Linha 2: Filtros -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                    <!-- Filtro de Elegibilidade -->
+                    <div>
+                        <label for="eligibility" class="block text-sm font-medium text-gray-700 mb-2">Elegibilidade</label>
+                        <select id="eligibility" name="eligibility" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 h-10">
+                            <option value="all" <?= ($filters['eligibility'] ?? '') === 'all' ? 'selected' : '' ?>>Todos</option>
+                            <option value="eligible" <?= ($filters['eligibility'] ?? '') === 'eligible' ? 'selected' : '' ?>>Elegíveis</option>
+                            <option value="not_eligible" <?= ($filters['eligibility'] ?? '') === 'not_eligible' ? 'selected' : '' ?>>Não Elegíveis</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Data Início -->
+                    <div>
+                        <label for="date_from" class="block text-sm font-medium text-gray-700 mb-2">Data Início</label>
+                        <input type="date" 
+                               id="date_from" 
+                               name="date_from" 
+                               value="<?= esc($filters['date_from'] ?? '') ?>"
+                               class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 h-10">
+                    </div>
+                    
+                    <!-- Data Fim -->
+                    <div>
+                        <label for="date_to" class="block text-sm font-medium text-gray-700 mb-2">Data Fim</label>
+                        <input type="date" 
+                               id="date_to" 
+                               name="date_to" 
+                               value="<?= esc($filters['date_to'] ?? '') ?>"
+                               class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 h-10">
+                    </div>
+                    
+                    <!-- Ordenação -->
+                    <div>
+                        <label for="order_by" class="block text-sm font-medium text-gray-700 mb-2">Ordenar por</label>
+                        <div class="flex gap-2 h-10">
+                            <select id="order_by" name="order_by" class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 h-full">
+                                <option value="full_name" <?= ($filters['order_by'] ?? '') === 'full_name' ? 'selected' : '' ?>>Nome</option>
+                                <option value="cpf" <?= ($filters['order_by'] ?? '') === 'cpf' ? 'selected' : '' ?>>CPF</option>
+                                <option value="created_at" <?= ($filters['order_by'] ?? '') === 'created_at' ? 'selected' : '' ?>>Data Cadastro</option>
+                                <option value="is_eligible" <?= ($filters['order_by'] ?? '') === 'is_eligible' ? 'selected' : '' ?>>Elegibilidade</option>
+                            </select>
+                            <select id="order_dir" name="order_dir" class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 h-full">
+                                <option value="asc" <?= ($filters['order_dir'] ?? '') === 'asc' ? 'selected' : '' ?>>↑</option>
+                                <option value="desc" <?= ($filters['order_dir'] ?? '') === 'desc' ? 'selected' : '' ?>>↓</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Resultados -->
     <div class="bg-white shadow-sm rounded-lg">
         <div class="p-6">
+            <!-- Contador de Resultados -->
+            <div class="mb-4 flex justify-between items-center">
+                <div id="results-count" class="text-sm text-gray-600">
+                    <?php if (isset($pagination)): ?>
+                        Mostrando <?= (($pagination['current_page'] - 1) * $pagination['per_page']) + 1 ?> até 
+                        <?= min($pagination['current_page'] * $pagination['per_page'], $pagination['total_records']) ?> de 
+                        <?= $pagination['total_records'] ?> resultados
+                    <?php endif; ?>
+                </div>
+                <div id="loading-indicator" class="hidden">
+                    <svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
+            </div>
+            
+            <!-- Tabela de Resultados -->
+            <div id="clients-table">
             <?php if (empty($clients)): ?>
                 <div class="text-center py-12">
                     <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -124,6 +228,13 @@
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                                 </svg>
                                             </a>
+                                            <?php if (isset($client['is_eligible']) && $client['is_eligible']): ?>
+                                                <a href="<?= base_url('/loans/create?client_id=' . $client['id']) ?>" class="text-green-600 hover:text-green-900" title="Criar empréstimo">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                    </svg>
+                                                </a>
+                                            <?php endif; ?>
                                             <a href="#" class="text-red-600 hover:text-red-900" title="Excluir cliente">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -137,24 +248,152 @@
                     </table>
                 </div>
                 
-                <!-- Pagination (if needed) -->
-                <div class="mt-4">
+            </div>
+            
+            <!-- Paginação -->
+            <?php if (isset($pagination) && $pagination['total_pages'] > 1): ?>
+                <div class="mt-6">
                     <nav class="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 sm:px-6">
                         <div class="flex justify-between flex-1 sm:hidden">
-                            <a href="#" class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Anterior</a>
-                            <a href="#" class="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Próximo</a>
+                            <?php if ($pagination['has_previous']): ?>
+                                <button type="button" class="pagination-btn relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50" data-page="<?= $pagination['current_page'] - 1 ?>">Anterior</button>
+                            <?php else: ?>
+                                <span class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-400 bg-gray-100 border border-gray-300 rounded-md cursor-not-allowed">Anterior</span>
+                            <?php endif; ?>
+                            
+                            <?php if ($pagination['has_next']): ?>
+                                <button type="button" class="pagination-btn relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50" data-page="<?= $pagination['current_page'] + 1 ?>">Próximo</button>
+                            <?php else: ?>
+                                <span class="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-gray-400 bg-gray-100 border border-gray-300 rounded-md cursor-not-allowed">Próximo</span>
+                            <?php endif; ?>
                         </div>
+                        
                         <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
                             <div>
                                 <p class="text-sm text-gray-700">
-                                    Mostrando <span class="font-medium">1</span> até <span class="font-medium"><?= count($clients) ?></span> de <span class="font-medium"><?= count($clients) ?></span> resultados
+                                    Página <span class="font-medium"><?= $pagination['current_page'] ?></span> de <span class="font-medium"><?= $pagination['total_pages'] ?></span>
                                 </p>
+                            </div>
+                            <div>
+                                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                    <?php if ($pagination['has_previous']): ?>
+                                        <button type="button" class="pagination-btn relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50" data-page="<?= $pagination['current_page'] - 1 ?>">
+                                            <span class="sr-only">Anterior</span>
+                                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                            </svg>
+                                        </button>
+                                    <?php endif; ?>
+                                    
+                                    <?php 
+                                    $startPage = max(1, $pagination['current_page'] - 2);
+                                    $endPage = min($pagination['total_pages'], $pagination['current_page'] + 2);
+                                    
+                                    for ($i = $startPage; $i <= $endPage; $i++): 
+                                    ?>
+                                        <?php if ($i == $pagination['current_page']): ?>
+                                            <span class="relative inline-flex items-center px-4 py-2 border border-blue-500 bg-blue-50 text-sm font-medium text-blue-600">
+                                                <?= $i ?>
+                                            </span>
+                                        <?php else: ?>
+                                            <button type="button" class="pagination-btn relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50" data-page="<?= $i ?>">
+                                                <?= $i ?>
+                                            </button>
+                                        <?php endif; ?>
+                                    <?php endfor; ?>
+                                    
+                                    <?php if ($pagination['has_next']): ?>
+                                        <button type="button" class="pagination-btn relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50" data-page="<?= $pagination['current_page'] + 1 ?>">
+                                            <span class="sr-only">Próximo</span>
+                                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                                            </svg>
+                                        </button>
+                                    <?php endif; ?>
+                                </nav>
                             </div>
                         </div>
                     </nav>
                 </div>
             <?php endif; ?>
+            <?php endif; ?>
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchForm = document.getElementById('filters-form');
+    const searchInput = document.getElementById('search');
+    const eligibilityFilter = document.getElementById('eligibility');
+    const startDateFilter = document.getElementById('date_from');
+    const endDateFilter = document.getElementById('date_to');
+    const sortFilter = document.getElementById('order_by');
+    const clearFiltersBtn = document.getElementById('clear-filters');
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const resultsContainer = document.getElementById('clients-table');
+    const resultsCount = document.getElementById('results-count');
+    
+    let searchTimeout;
+    
+    // Função para realizar busca (submete o formulário)
+    function performSearch() {
+        clearTimeout(searchTimeout);
+        
+        searchTimeout = setTimeout(() => {
+            if (searchForm) {
+                searchForm.submit();
+            }
+        }, 300);
+    }
+    
+    // Event listeners para os filtros
+    if (searchInput) {
+        searchInput.addEventListener('input', performSearch);
+    }
+    
+    if (eligibilityFilter) {
+        eligibilityFilter.addEventListener('change', performSearch);
+    }
+    
+    if (startDateFilter) {
+        startDateFilter.addEventListener('change', performSearch);
+    }
+    
+    if (endDateFilter) {
+        endDateFilter.addEventListener('change', performSearch);
+    }
+    
+    if (sortFilter) {
+        sortFilter.addEventListener('change', performSearch);
+    }
+    
+    // Limpar filtros
+    if (clearFiltersBtn) {
+        clearFiltersBtn.addEventListener('click', function() {
+            searchForm.reset();
+            performSearch();
+        });
+    }
+    
+    // Carregar filtros da URL na inicialização
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('search')) {
+        searchInput.value = urlParams.get('search');
+    }
+    if (urlParams.has('eligibility')) {
+        eligibilityFilter.value = urlParams.get('eligibility');
+    }
+    if (urlParams.has('start_date')) {
+        startDateFilter.value = urlParams.get('start_date');
+    }
+    if (urlParams.has('end_date')) {
+        endDateFilter.value = urlParams.get('end_date');
+    }
+    if (urlParams.has('sort')) {
+        sortFilter.value = urlParams.get('sort');
+    }
+});
+</script>
+
 <?= $this->endSection() ?>

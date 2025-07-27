@@ -1,0 +1,18 @@
+# Product Requirements Document: Corrigir Link de Aceitação de Empréstimo
+
+## Visão Geral
+O link de aceitação de empréstimo (ex: http://localhost:8081/loans/accept/a8d3eac3ad682006b8798267516267410733bd0084565b2b9ca09295422a3203) não abre corretamente. O objetivo é diagnosticar e corrigir o problema sem realizar a aceitação real do empréstimo.
+
+## Requisitos Funcionais
+1. Verificar a rota correspondente no arquivo Routes.php.
+2. Inspecionar o controlador LoansController para o método de aceitação.
+3. Verificar permissões, autenticação e validações no código.
+4. Testar a rota sem alterar o status do empréstimo.
+5. Corrigir qualquer erro encontrado, como 404 ou exceções.
+
+## Requisitos Não Funcionais
+- Manter a integridade dos dados: não aceitar empréstimos durante os testes.
+- Usar ferramentas de depuração para logs e verificações.
+
+## Escopo
+Focar apenas na funcionalidade do link de aceitação, sem impactar outras partes do sistema.

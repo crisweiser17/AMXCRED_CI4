@@ -241,15 +241,132 @@ class SettingsController extends BaseController
     }
 
     /**
-     * Configurações de SMTP (placeholder para futuro)
+     * Configurações de SMTP
      */
     public function smtp()
     {
+        // Buscar configurações atuais de SMTP
+        $settings = [
+            'protocol' => $this->settingModel->getSetting('email', 'protocol') ?? 'mail',
+            'fromEmail' => $this->settingModel->getSetting('email', 'fromEmail') ?? '',
+            'fromName' => $this->settingModel->getSetting('email', 'fromName') ?? '',
+            'SMTPHost' => $this->settingModel->getSetting('email', 'SMTPHost') ?? '',
+            'SMTPUser' => $this->settingModel->getSetting('email', 'SMTPUser') ?? '',
+            'SMTPPass' => $this->settingModel->getSetting('email', 'SMTPPass') ?? '',
+            'SMTPPort' => $this->settingModel->getSetting('email', 'SMTPPort') ?? '587',
+            'SMTPTimeout' => $this->settingModel->getSetting('email', 'SMTPTimeout') ?? '5',
+            'SMTPKeepAlive' => $this->settingModel->getSetting('email', 'SMTPKeepAlive') ?? false,
+            'SMTPCrypto' => $this->settingModel->getSetting('email', 'SMTPCrypto') ?? 'tls',
+            'mailType' => $this->settingModel->getSetting('email', 'mailType') ?? 'text',
+            'charset' => $this->settingModel->getSetting('email', 'charset') ?? 'UTF-8'
+        ];
+
         $data = [
-            'title' => 'Configurações SMTP'
+            'title' => 'Configurações SMTP',
+            'settings' => $settings
         ];
 
         return view('settings/smtp', $data);
+    }
+
+    /**
+     * Salva configurações SMTP
+     */
+    public function saveSmtp()
+    {
+        $settings = [
+            'protocol' => $this->request->getPost('protocol'),
+            'fromEmail' => $this->request->getPost('fromEmail'),
+            'fromName' => $this->request->getPost('fromName'),
+            'SMTPHost' => $this->request->getPost('SMTPHost'),
+            'SMTPUser' => $this->request->getPost('SMTPUser'),
+            'SMTPPass' => $this->request->getPost('SMTPPass'),
+            'SMTPPort' => $this->request->getPost('SMTPPort'),
+            'SMTPTimeout' => $this->request->getPost('SMTPTimeout'),
+            'SMTPKeepAlive' => $this->request->getPost('SMTPKeepAlive') ? true : false,
+            'SMTPCrypto' => $this->request->getPost('SMTPCrypto'),
+            'mailType' => $this->request->getPost('mailType'),
+            'charset' => $this->request->getPost('charset')
+        ];
+
+        $success = true;
+        foreach ($settings as $key => $value) {
+            if (!$this->settingModel->setSetting('email', $key, $value)) {
+                $success = false;
+                break;
+            }
+        }
+
+        return $this->response->setJSON([
+            'success' => $success,
+            'message' => $success ? 'Configurações SMTP salvas com sucesso!' : 'Erro ao salvar configurações SMTP'
+        ]);
+    }
+
+    /**
+     * Testa envio de e-mail SMTP
+     */
+    public function testSmtp()
+    {
+        try {
+            $input = $this->request->getJSON(true);
+            $testEmail = $input['email'] ?? null;
+            
+            if (!$testEmail || !filter_var($testEmail, FILTER_VALIDATE_EMAIL)) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'E-mail inválido para teste'
+                ]);
+            }
+
+            // Carregar configurações atuais
+            $emailConfig = new \Config\Email();
+            
+            // Aplicar configurações salvas
+            $emailConfig->protocol = $this->settingModel->getSetting('email', 'protocol') ?? 'mail';
+            $emailConfig->fromEmail = $this->settingModel->getSetting('email', 'fromEmail') ?? '';
+            $emailConfig->fromName = $this->settingModel->getSetting('email', 'fromName') ?? '';
+            $emailConfig->SMTPHost = $this->settingModel->getSetting('email', 'SMTPHost') ?? '';
+            $emailConfig->SMTPUser = $this->settingModel->getSetting('email', 'SMTPUser') ?? '';
+            $emailConfig->SMTPPass = $this->settingModel->getSetting('email', 'SMTPPass') ?? '';
+            $emailConfig->SMTPPort = (int)($this->settingModel->getSetting('email', 'SMTPPort') ?? 587);
+            $emailConfig->SMTPTimeout = (int)($this->settingModel->getSetting('email', 'SMTPTimeout') ?? 5);
+            $emailConfig->SMTPKeepAlive = (bool)($this->settingModel->getSetting('email', 'SMTPKeepAlive') ?? false);
+            $emailConfig->SMTPCrypto = $this->settingModel->getSetting('email', 'SMTPCrypto') ?? 'tls';
+            $emailConfig->mailType = $this->settingModel->getSetting('email', 'mailType') ?? 'text';
+            $emailConfig->charset = $this->settingModel->getSetting('email', 'charset') ?? 'UTF-8';
+
+            // Inicializar serviço de e-mail
+            $email = \Config\Services::email($emailConfig);
+            
+            $email->setFrom($emailConfig->fromEmail, $emailConfig->fromName);
+            $email->setTo($testEmail);
+            $email->setSubject('Teste de Configuração SMTP - Sistema AMX');
+            
+            if ($emailConfig->mailType === 'html') {
+                $email->setMessage('<h2>Teste de E-mail</h2><p>Este é um e-mail de teste para verificar as configurações SMTP do sistema AMX.</p><p>Se você recebeu este e-mail, as configurações estão funcionando corretamente!</p>');
+            } else {
+                $email->setMessage('Teste de E-mail\n\nEste é um e-mail de teste para verificar as configurações SMTP do sistema AMX.\n\nSe você recebeu este e-mail, as configurações estão funcionando corretamente!');
+            }
+
+            if ($email->send()) {
+                return $this->response->setJSON([
+                    'success' => true,
+                    'message' => 'E-mail de teste enviado com sucesso para ' . $testEmail
+                ]);
+            } else {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Erro ao enviar e-mail: ' . $email->printDebugger(['headers'])
+                ]);
+            }
+            
+        } catch (\Exception $e) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Erro ao enviar e-mail de teste: ' . $e->getMessage()
+            ]);
+        }
     }
 
     /**

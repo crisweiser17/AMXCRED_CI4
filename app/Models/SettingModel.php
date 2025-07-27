@@ -152,17 +152,53 @@ class SettingModel extends Model
             'documents' => ['payslip_1', 'payslip_2', 'payslip_3', 'id_front', 'id_back', 'selfie']
         ];
         
+        // Descrições padrão dos campos
+        $fieldDescriptions = [
+            'full_name' => 'Nome Completo',
+            'cpf' => 'CPF',
+            'email' => 'E-mail',
+            'phone' => 'Telefone',
+            'birth_date' => 'Data de Nascimento',
+            'occupation' => 'Profissão',
+            'industry' => 'Setor de Atividade',
+            'employment_duration' => 'Tempo de Emprego',
+            'monthly_income' => 'Renda Mensal',
+            'pix_key_type' => 'Tipo de Chave PIX',
+            'pix_key' => 'Chave PIX',
+            'zip_code' => 'CEP',
+            'street' => 'Rua',
+            'number' => 'Número',
+            'complement' => 'Complemento',
+            'neighborhood' => 'Bairro',
+            'city' => 'Cidade',
+            'state' => 'Estado',
+            'payslip_1' => 'Holerite 1',
+            'payslip_2' => 'Holerite 2',
+            'payslip_3' => 'Holerite 3',
+            'id_front' => 'RG/CNH Frente',
+            'id_back' => 'RG/CNH Verso',
+            'selfie' => 'Selfie'
+        ];
+        
+        // Criar um mapa dos settings existentes
+        $settingsMap = [];
         foreach ($settings as $setting) {
-            foreach ($fieldGroups as $groupKey => $fields) {
-                if (in_array($setting['key'], $fields)) {
-                    $groups[$groupKey]['fields'][] = [
-                        'key' => $setting['key'],
-                        'description' => $setting['description'],
-                        'required' => $setting['value'] === 'true',
-                        'locked' => in_array($setting['key'], ['full_name', 'cpf']) // Campos sempre obrigatórios
-                    ];
-                    break;
-                }
+            $settingsMap[$setting['key']] = $setting;
+        }
+        
+        // Processar todos os campos definidos
+        foreach ($fieldGroups as $groupKey => $fields) {
+            foreach ($fields as $fieldKey) {
+                $setting = $settingsMap[$fieldKey] ?? null;
+                $description = $setting['description'] ?? $fieldDescriptions[$fieldKey] ?? ucfirst(str_replace('_', ' ', $fieldKey));
+                $required = $setting ? ($setting['value'] === 'true') : false;
+                
+                $groups[$groupKey]['fields'][] = [
+                    'key' => $fieldKey,
+                    'description' => $description,
+                    'required' => $required,
+                    'locked' => in_array($fieldKey, ['full_name', 'cpf']) // Campos sempre obrigatórios
+                ];
             }
         }
         

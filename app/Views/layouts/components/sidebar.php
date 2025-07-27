@@ -18,9 +18,9 @@
             ?>
 
             <!-- Dashboard -->
-            <a href="<?= base_url('/') ?>"
-               class="flex items-center p-2 text-gray-300 rounded-lg hover:bg-gray-700 group <?= $currentUrl === base_url('/') ? 'bg-blue-600 text-white' : '' ?>">
-                <svg class="w-5 h-5 text-gray-400 transition duration-75 group-hover:text-white <?= $currentUrl === base_url('/') ? 'text-white' : '' ?>" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+            <a href="<?= base_url('/dashboard') ?>"
+               class="flex items-center p-2 text-gray-300 rounded-lg hover:bg-gray-700 group <?= strpos($currentUrl, '/dashboard') !== false ? 'bg-blue-600 text-white' : '' ?>">
+                <svg class="w-5 h-5 text-gray-400 transition duration-75 group-hover:text-white <?= strpos($currentUrl, '/dashboard') !== false ? 'text-white' : '' ?>" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                     <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"></path>
                     <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"></path>
                 </svg>
@@ -53,6 +53,39 @@
                         <a href="<?= base_url('/clients/create') ?>"
                            class="flex items-center w-full p-2 text-gray-300 transition duration-75 rounded-lg pl-11 group hover:bg-gray-700">
                             <span class="sidebar-text">Novo Cliente</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+
+
+            <!-- Loans Module -->
+            <div class="space-y-1">
+                <button type="button"
+                        class="flex items-center w-full p-2 text-base text-gray-300 transition duration-75 rounded-lg group hover:bg-gray-700"
+                        aria-controls="dropdown-loans"
+                        data-collapse-toggle="dropdown-loans">
+                    <svg class="w-5 h-5 text-gray-400 transition duration-75 group-hover:text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z"></path>
+                    </svg>
+                    <span class="flex-1 ml-3 text-left whitespace-nowrap sidebar-text">Empréstimos</span>
+                    <svg class="w-3 h-3 text-gray-400 sidebar-text" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6" style="transition: transform 0.3s ease;">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
+                    </svg>
+                </button>
+                
+                <ul id="dropdown-loans" class="py-2 space-y-1 dropdown-hidden">
+                    <li>
+                        <a href="<?= base_url('/loans') ?>"
+                           class="flex items-center w-full p-2 text-gray-300 transition duration-75 rounded-lg pl-11 group hover:bg-gray-700 <?= strpos($currentUrl, '/loans') !== false ? 'bg-blue-600 text-white' : '' ?>">
+                            <span class="sidebar-text">Listar Empréstimos</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?= base_url('/loans/create') ?>"
+                           class="flex items-center w-full p-2 text-gray-300 transition duration-75 rounded-lg pl-11 group hover:bg-gray-700">
+                            <span class="sidebar-text">Novo Empréstimo</span>
                         </a>
                     </li>
                 </ul>
@@ -114,6 +147,12 @@
                         <a href="<?= base_url('/settings/loan-plans') ?>"
                            class="flex items-center w-full p-2 text-gray-300 transition duration-75 rounded-lg pl-11 group hover:bg-gray-700 <?= strpos($currentUrl, '/settings/loan-plans') !== false ? 'bg-blue-600 text-white' : '' ?>">
                             <span class="sidebar-text">Planos de Empréstimo</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="<?= base_url('/settings/test-area') ?>"
+                           class="flex items-center w-full p-2 text-gray-300 transition duration-75 rounded-lg pl-11 group hover:bg-gray-700 <?= strpos($currentUrl, '/settings/test-area') !== false ? 'bg-blue-600 text-white' : '' ?>">
+                            <span class="sidebar-text">Área de Testes</span>
                         </a>
                     </li>
                 </ul>

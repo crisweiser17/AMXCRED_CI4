@@ -471,7 +471,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const modal = document.getElementById('documentModal');
         
         // Buscar informações do documento
-        fetch(`/documents/info/${clientId}/${documentType}`)
+        fetch(`<?= base_url('/documents/info/') ?>${clientId}/${documentType}`)
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
@@ -511,7 +511,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <div class="mt-4 text-sm text-gray-600">
                                     <p>Arquivo: ${data.data.fileName}</p>
                                     <p>Tamanho: ${data.data.fileSizeFormatted}</p>
-                                    <a href="/documents/serve/${clientId}/${documentType}"
+                                    <a href="<?= base_url('/documents/serve/') ?>${clientId}/${documentType}"
                                        target="_blank"
                                        class="inline-flex items-center px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 mt-2">
                                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

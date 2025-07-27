@@ -5,8 +5,15 @@ use CodeIgniter\Router\RouteCollection;
 /**
  * @var RouteCollection $routes
  */
-$routes->get('/', 'Home::index');
-$routes->get('/dashboard', 'Home::dashboard');
+$routes->get('/', 'Home::dashboard');
+$routes->get('/dashboard', 'AuthController::dashboard');
+
+// Rotas de Autenticação
+$routes->group('admin', function($routes) {
+    $routes->get('login', 'AuthController::login');
+    $routes->post('login', 'AuthController::processLogin');
+    $routes->get('logout', 'AuthController::logout');
+});
 
 // Rotas de Clientes
 $routes->get('/clients', 'ClientController::index');
@@ -42,6 +49,8 @@ $routes->group('settings', function($routes) {
     $routes->post('save-cpf-api', 'SettingsController::saveCpfApi');
     $routes->post('test-cpf-api', 'SettingsController::testCpfApi');
     $routes->get('smtp', 'SettingsController::smtp');
+    $routes->post('save-smtp', 'SettingsController::saveSmtp');
+    $routes->post('test-smtp', 'SettingsController::testSmtp');
     $routes->get('colors', 'SettingsController::colors');
     $routes->get('payment', 'SettingsController::payment');
     
@@ -58,7 +67,37 @@ $routes->group('settings', function($routes) {
     
     // Rota de debug temporária
     $routes->get('loan-plans/debug/(:num)', 'SettingsControllerDebug::viewLoanPlanDebug/$1');
+    
+    // Rotas da Área de Testes
+    $routes->get('test-area', 'TestAreaController::index');
+    $routes->get('test-area/test', 'TestAreaController::test');
+    $routes->get('test-area/debug', 'TestAreaController::debug');
+    $routes->post('test-area/update-loan-status', 'TestAreaController::updateLoanStatus');
+    $routes->post('test-area/delete-loan', 'TestAreaController::deleteLoan');
+    $routes->get('test-area/get-loan-installments/(:num)', 'TestAreaController::getLoanInstallments/$1');
+    $routes->post('test-area/mark-installment-paid', 'TestAreaController::markInstallmentAsPaid');
 });
+
+// Rotas de Empréstimos
+$routes->group('loans', function($routes) {
+    $routes->get('/', 'LoansController::index');
+    $routes->get('create', 'LoansController::create');
+    $routes->post('store', 'LoansController::store');
+    $routes->get('view/(:num)', 'LoansController::view/$1');
+    $routes->post('fund/(:num)', 'LoansController::fund/$1');
+    $routes->post('cancel/(:num)', 'LoansController::cancel/$1');
+    $routes->post('send-notification/(:num)', 'LoansController::sendNotification/$1');
+});
+
+// Rotas Públicas de Aceitação de Empréstimo (sem autenticação)
+$routes->get('/accept-loan/(:segment)', 'LoansController::accept/$1');
+$routes->get('/loans/accept/(:segment)', 'LoansController::accept/$1'); // Adicionado para compatibilidade com links gerados
+$routes->post('/loans/process-acceptance', 'LoansController::processAcceptance');
+$routes->get('/loan-acceptance-success', 'LoansController::acceptanceSuccess');
+$routes->get('/loans/acceptance-success', 'LoansController::acceptanceSuccess'); // Adicionado para compatibilidade
+$routes->get('/loan-acceptance-error', 'LoansController::acceptanceError');
+$routes->get('/loans/acceptance-error', 'LoansController::acceptanceError'); // Adicionado para compatibilidade com redirecionamentos
+$routes->get('/loans/cancel/(:num)', 'LoansController::cancel/$1'); // Adicionado para compatibilidade com cancelamento
 
 // Rotas de Debug para Planos de Empréstimo
 $routes->get('/loan-plans-debug', 'LoanPlansController::index');

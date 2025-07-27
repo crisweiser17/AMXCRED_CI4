@@ -26,20 +26,55 @@ class ClientController extends BaseController
     public function index()
     {
         try {
-            $clients = $this->clientModel->findAll();
+            // Parâmetros de busca e filtros
+            $search = $this->request->getGet('search') ?? '';
+            $eligibility = $this->request->getGet('eligibility') ?? 'all';
+            $dateFrom = $this->request->getGet('date_from') ?? '';
+            $dateTo = $this->request->getGet('date_to') ?? '';
+            $orderBy = $this->request->getGet('order_by') ?? 'full_name';
+            $orderDir = $this->request->getGet('order_dir') ?? 'asc';
+            $page = (int)($this->request->getGet('page') ?? 1);
+            $perPage = 20;
             
-            // Garantir que TODOS os clientes tenham is_eligible definido de forma segura
-            if (is_array($clients) && !empty($clients)) {
-                foreach ($clients as &$client) {
-                    $client['is_eligible'] = false;
-                }
-                unset($client); // Limpar referência
-            } else {
-                $clients = [];
+            // Se for requisição AJAX, retornar apenas os dados
+            if ($this->request->isAJAX()) {
+                $result = $this->clientModel->getClientsWithFilters([
+                    'search' => $search,
+                    'eligibility' => $eligibility,
+                    'date_from' => $dateFrom,
+                    'date_to' => $dateTo,
+                    'order_by' => $orderBy,
+                    'order_dir' => $orderDir,
+                    'page' => $page,
+                    'per_page' => $perPage
+                ]);
+                
+                return $this->response->setJSON($result);
             }
             
+            // Buscar clientes com filtros
+            $result = $this->clientModel->getClientsWithFilters([
+                'search' => $search,
+                'eligibility' => $eligibility,
+                'date_from' => $dateFrom,
+                'date_to' => $dateTo,
+                'order_by' => $orderBy,
+                'order_dir' => $orderDir,
+                'page' => $page,
+                'per_page' => $perPage
+            ]);
+            
             $data = [
-                'clients' => $clients,
+                'clients' => $result['data'],
+                'pagination' => $result['pagination'],
+                'filters' => [
+                    'search' => $search,
+                    'eligibility' => $eligibility,
+                    'date_from' => $dateFrom,
+                    'date_to' => $dateTo,
+                    'order_by' => $orderBy,
+                    'order_dir' => $orderDir
+                ],
                 'title' => 'Lista de Clientes'
             ];
 

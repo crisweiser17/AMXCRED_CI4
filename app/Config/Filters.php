@@ -34,6 +34,7 @@ class Filters extends BaseFilters
         'forcehttps'    => ForceHTTPS::class,
         'pagecache'     => PageCache::class,
         'performance'   => PerformanceMetrics::class,
+        'auth'          => \App\Filters\AuthFilter::class,
     ];
 
     /**
@@ -103,5 +104,29 @@ class Filters extends BaseFilters
      *
      * @var array<string, array<string, list<string>>>
      */
-    public array $filters = [];
+    public array $filters = [
+        'auth' => [
+            'before' => [
+                'dashboard',
+                'admin/logout',
+                'settings/*',
+                'clients/*',
+                'loan_plans/*',
+                'loans/*'
+            ],
+            'except' => [
+                'admin/login',
+                'settings/test-area',
+                'settings/test-area/*',
+                'loans/accept/*',
+                'accept-loan/*',
+                'loan-acceptance-success',
+                'loans/acceptance-success',
+                'loan-acceptance-error',
+                'loans/acceptance-error',
+                'loans/cancel/*',
+                'loans/process-acceptance'
+            ]
+        ]
+    ];
 }
