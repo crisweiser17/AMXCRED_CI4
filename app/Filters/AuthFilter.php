@@ -27,11 +27,28 @@ class AuthFilter implements FilterInterface
     {
         $session = session();
         $uri = $request->getUri();
-        $path = $uri->getPath();
+        $path = trim($uri->getPath(), '/');
         
-        // Skip authentication check for login routes and test area
-        if (strpos($path, '/admin/login') !== false || strpos($path, '/settings/test-area') !== false) {
-            return;
+        // Lista de rotas públicas (sem autenticação)
+        $publicRoutes = [
+            'admin/login',
+            'settings/test-area',
+            'loans/accept',
+            'accept-loan',
+            'loan-acceptance-success',
+            'loans/acceptance-success',
+            'loan-acceptance-error', 
+            'loans/acceptance-error',
+            'loans/cancel',
+            'loans/process-acceptance',
+            'register'
+        ];
+        
+        // Verificar se a rota atual é pública
+        foreach ($publicRoutes as $publicRoute) {
+            if (strpos($path, $publicRoute) === 0) {
+                return;
+            }
         }
         
         // Check if user is logged in
@@ -48,7 +65,7 @@ class AuthFilter implements FilterInterface
             $userRole = $session->get('user_role');
             
             if (!in_array($userRole, $arguments)) {
-                return redirect()->to('/admin/dashboard')->with('error', 'Você não tem permissão para acessar esta página.');
+                return redirect()->to('/dashboard')->with('error', 'Você não tem permissão para acessar esta página.');
             }
         }
     }

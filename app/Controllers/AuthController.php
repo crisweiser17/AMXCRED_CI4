@@ -24,7 +24,7 @@ class AuthController extends BaseController
     {
         // If already logged in, redirect to dashboard
         if ($this->isLoggedIn()) {
-            return redirect()->to('/admin/dashboard');
+            return redirect()->to('/dashboard');
         }
         
         return view('auth/login');
@@ -61,7 +61,7 @@ class AuthController extends BaseController
             
             $this->session->set($sessionData);
             
-            return redirect()->to('/admin/dashboard')->with('success', 'Login realizado com sucesso!');
+            return redirect()->to('/dashboard')->with('success', 'Login realizado com sucesso!');
         } else {
             return redirect()->back()->withInput()->with('error', 'Email ou senha inválidos.');
         }

@@ -122,10 +122,13 @@ class Filters extends BaseFilters
                 'accept-loan/*',
                 'loan-acceptance-success',
                 'loans/acceptance-success',
+                'loans/rejection-success',
                 'loan-acceptance-error',
                 'loans/acceptance-error',
                 'loans/cancel/*',
-                'loans/process-acceptance'
+                'loans/process-acceptance',
+                'register',
+                'register/*'
             ]
         ]
     ];

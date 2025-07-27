@@ -53,3 +53,38 @@ Events::on('pre_system', static function (): void {
         }
     }
 });
+
+/*
+ * --------------------------------------------------------------------
+ * Load Timezone from Database
+ * --------------------------------------------------------------------
+ * This event loads the timezone configuration from the database
+ * and sets it as the default timezone for the application.
+ */
+Events::on('pre_system', static function (): void {
+    try {
+        // Verificar se as tabelas existem antes de tentar carregar
+        $db = \Config\Database::connect();
+        
+        // Verificar se a tabela settings existe
+        if ($db->tableExists('settings')) {
+            // Buscar o timezone configurado no banco
+            $query = $db->query(
+                "SELECT value FROM settings WHERE category = 'system' AND setting_key = 'timezone' LIMIT 1"
+            );
+            
+            $result = $query->getRow();
+            
+            if ($result && !empty($result->value)) {
+                // Validar se o timezone é válido
+                if (in_array($result->value, timezone_identifiers_list())) {
+                    date_default_timezone_set($result->value);
+                }
+            }
+        }
+    } catch (\Exception $e) {
+        // Em caso de erro, usar o timezone padrão definido no App.php
+        // Não fazer nada para não quebrar a aplicação
+        log_message('error', 'Erro ao carregar timezone do banco: ' . $e->getMessage());
+    }
+});

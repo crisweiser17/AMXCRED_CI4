@@ -816,4 +816,182 @@ class SettingsController extends BaseController
             ]);
         }
     }
+
+    /**
+     * Configurações de Timezone
+     */
+    public function timezone()
+    {
+        // Buscar configuração atual do timezone
+        $currentTimezone = $this->settingModel->getSetting('system', 'timezone') ?? 'America/Sao_Paulo';
+        
+        // Lista de timezones mais comuns no Brasil
+        $timezones = [
+            'America/Sao_Paulo' => 'São Paulo (UTC-3)',
+            'America/Manaus' => 'Manaus (UTC-4)',
+            'America/Rio_Branco' => 'Rio Branco (UTC-5)',
+            'America/Noronha' => 'Fernando de Noronha (UTC-2)',
+            'UTC' => 'UTC (Tempo Universal Coordenado)'
+        ];
+
+        $data = [
+            'title' => 'Configurações de Timezone',
+            'currentTimezone' => $currentTimezone,
+            'timezones' => $timezones
+        ];
+
+        return view('settings/timezone', $data);
+    }
+
+    /**
+     * Salva configurações de Timezone
+     */
+    public function saveTimezone()
+    {
+        $timezone = $this->request->getPost('timezone');
+        
+        if (empty($timezone)) {
+            return redirect()->back()->with('error', 'Timezone é obrigatório');
+        }
+        
+        // Validar se o timezone é válido
+        if (!in_array($timezone, timezone_identifiers_list())) {
+            return redirect()->back()->with('error', 'Timezone inválido');
+        }
+        
+        try {
+            // Salvar no banco de dados
+            $success = $this->settingModel->setSetting('system', 'timezone', $timezone, 'Fuso horário do sistema');
+            
+            if ($success) {
+                // Atualizar o timezone da aplicação imediatamente
+                date_default_timezone_set($timezone);
+                
+                return redirect()->to('/settings/timezone')
+                               ->with('success', 'Timezone atualizado com sucesso!');
+            } else {
+                return redirect()->back()
+                               ->with('error', 'Erro ao salvar timezone');
+            }
+        } catch (\Exception $e) {
+            return redirect()->back()
+                           ->with('error', 'Erro interno: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Configurações de Mensagens do Sistema
+     */
+    public function systemMessages()
+    {
+        // Buscar mensagens atuais do sistema
+        $messages = [
+            'loan_terms_conditions' => $this->settingModel->getSetting('system_messages', 'loan_terms_conditions') ?? $this->getDefaultTermsAndConditions(),
+            'loan_acceptance_success_title' => $this->settingModel->getSetting('system_messages', 'loan_acceptance_success_title'),
+            'loan_acceptance_success_message' => $this->settingModel->getSetting('system_messages', 'loan_acceptance_success_message'),
+            'loan_acceptance_success_next_steps' => $this->settingModel->getSetting('system_messages', 'loan_acceptance_success_next_steps'),
+            'loan_rejection_success_title' => $this->settingModel->getSetting('system_messages', 'loan_rejection_success_title'),
+            'loan_rejection_success_message' => $this->settingModel->getSetting('system_messages', 'loan_rejection_success_message'),
+            'loan_acceptance_error_title' => $this->settingModel->getSetting('system_messages', 'loan_acceptance_error_title'),
+            'loan_acceptance_error_message' => $this->settingModel->getSetting('system_messages', 'loan_acceptance_error_message')
+        ];
+
+        $data = [
+            'title' => 'Mensagens do Sistema',
+            'messages' => $messages
+        ];
+
+        return view('settings/system_messages', $data);
+    }
+
+    /**
+     * Salva configurações de Mensagens do Sistema
+     */
+    public function saveSystemMessages()
+    {
+        $settings = [
+            'loan_terms_conditions' => $this->request->getPost('loan_terms_conditions'),
+            'loan_acceptance_success_title' => $this->request->getPost('loan_acceptance_success_title'),
+            'loan_acceptance_success_message' => $this->request->getPost('loan_acceptance_success_message'),
+            'loan_acceptance_success_next_steps' => $this->request->getPost('loan_acceptance_success_next_steps'),
+            'loan_rejection_success_title' => $this->request->getPost('loan_rejection_success_title'),
+            'loan_rejection_success_message' => $this->request->getPost('loan_rejection_success_message'),
+            'loan_acceptance_error_title' => $this->request->getPost('loan_acceptance_error_title'),
+            'loan_acceptance_error_message' => $this->request->getPost('loan_acceptance_error_message')
+        ];
+        
+        try {
+            $success = true;
+            
+            // Salvar todas as configurações
+            foreach ($settings as $key => $value) {
+                if ($value !== null) { // Só salva se o valor não for nulo
+                    $description = $this->getSettingDescription($key);
+                    if (!$this->settingModel->setSetting('system_messages', $key, $value, $description)) {
+                        $success = false;
+                        break;
+                    }
+                }
+            }
+            
+            if ($success) {
+                return redirect()->to('/settings/system-messages')
+                               ->with('success', 'Mensagens atualizadas com sucesso!');
+            } else {
+                return redirect()->back()
+                               ->with('error', 'Erro ao salvar mensagens');
+            }
+        } catch (\Exception $e) {
+            return redirect()->back()
+                           ->with('error', 'Erro interno: ' . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Retorna a descrição para cada configuração
+     */
+    private function getSettingDescription($key)
+    {
+        $descriptions = [
+            'loan_terms_conditions' => 'Termos e condições exibidos na página de aceite de empréstimo',
+            'loan_acceptance_success_title' => 'Título exibido na página de sucesso de aceitação de empréstimo',
+            'loan_acceptance_success_message' => 'Mensagem exibida na página de sucesso de aceitação de empréstimo',
+            'loan_acceptance_success_next_steps' => 'Próximos passos exibidos na página de sucesso de aceitação de empréstimo',
+            'loan_rejection_success_title' => 'Título exibido na página de sucesso de recusa de empréstimo',
+            'loan_rejection_success_message' => 'Mensagem exibida na página de sucesso de recusa de empréstimo',
+            'loan_acceptance_error_title' => 'Título exibido na página de erro de aceitação de empréstimo',
+            'loan_acceptance_error_message' => 'Mensagem exibida na página de erro de aceitação de empréstimo'
+        ];
+        
+        return $descriptions[$key] ?? 'Configuração do sistema';
+    }
+
+    /**
+     * Retorna os termos e condições padrão
+     */
+    private function getDefaultTermsAndConditions()
+    {
+        return '<ul class="space-y-2 text-sm text-gray-700">
+            <li class="flex items-start">
+                <span class="w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                Ao aceitar este empréstimo, você concorda em pagar o valor total conforme especificado.
+            </li>
+            <li class="flex items-start">
+                <span class="w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                O valor de cada parcela será cobrado mensalmente.
+            </li>
+            <li class="flex items-start">
+                <span class="w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                O não pagamento das parcelas pode resultar em cobrança de juros e multas.
+            </li>
+            <li class="flex items-start">
+                <span class="w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                Você tem o direito de quitar antecipadamente o empréstimo.
+            </li>
+            <li class="flex items-start">
+                <span class="w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                Este empréstimo está sujeito às leis brasileiras de proteção ao consumidor.
+            </li>
+        </ul>';
+    }
 }

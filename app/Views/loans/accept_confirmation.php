@@ -69,32 +69,39 @@
             <div class="border-t border-gray-200 pt-6">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Termos e Condições</h3>
                 <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
-                    <ul class="space-y-2 text-sm text-gray-700">
-                        <li class="flex items-start">
-                            <span class="w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                            Ao aceitar este empréstimo, você concorda em pagar o valor total em <?= esc($loan['number_of_installments']) ?> parcelas mensais.
-                        </li>
-                        <li class="flex items-start">
-                            <span class="w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                            O valor de cada parcela é de <?= esc($loan['installment_amount_formatted']) ?>.
-                        </li>
-                        <li class="flex items-start">
-                            <span class="w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                            O não pagamento das parcelas pode resultar em cobrança de juros e multas.
-                        </li>
-                        <li class="flex items-start">
-                            <span class="w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                            Você tem o direito de quitar antecipadamente o empréstimo.
-                        </li>
-                        <li class="flex items-start">
-                            <span class="w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                            Este empréstimo está sujeito às leis brasileiras de proteção ao consumidor.
-                        </li>
-                        <li class="flex items-start">
-                            <span class="w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
-                            Em caso de dúvidas, entre em contato conosco antes de aceitar.
-                        </li>
-                    </ul>
+                    <?php if (!empty($termsAndConditions)): ?>
+                        <div class="text-sm text-gray-700 prose prose-sm max-w-none">
+                            <?= $termsAndConditions ?>
+                        </div>
+                    <?php else: ?>
+                        <!-- Termos padrão caso não haja configuração -->
+                        <ul class="space-y-2 text-sm text-gray-700">
+                            <li class="flex items-start">
+                                <span class="w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                                Ao aceitar este empréstimo, você concorda em pagar o valor total em <?= esc($loan['number_of_installments']) ?> parcelas mensais.
+                            </li>
+                            <li class="flex items-start">
+                                <span class="w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                                O valor de cada parcela é de <?= esc($loan['installment_amount_formatted']) ?>.
+                            </li>
+                            <li class="flex items-start">
+                                <span class="w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                                O não pagamento das parcelas pode resultar em cobrança de juros e multas.
+                            </li>
+                            <li class="flex items-start">
+                                <span class="w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                                Você tem o direito de quitar antecipadamente o empréstimo.
+                            </li>
+                            <li class="flex items-start">
+                                <span class="w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                                Este empréstimo está sujeito às leis brasileiras de proteção ao consumidor.
+                            </li>
+                            <li class="flex items-start">
+                                <span class="w-2 h-2 bg-blue-600 rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                                Em caso de dúvidas, entre em contato conosco antes de aceitar.
+                            </li>
+                        </ul>
+                    <?php endif; ?>
                 </div>
                 
                 <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
@@ -143,19 +150,95 @@
     </div>
 </div>
 
+<!-- Modal de Confirmação -->
+<div id="confirmationModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3 text-center">
+            <div id="modalIcon" class="mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-4">
+                <!-- Ícone será inserido dinamicamente -->
+            </div>
+            <h3 id="modalTitle" class="text-lg leading-6 font-medium text-gray-900 mb-2"></h3>
+            <div class="mt-2 px-7 py-3">
+                <p id="modalMessage" class="text-sm text-gray-500"></p>
+            </div>
+            <div class="items-center px-4 py-3">
+                <button id="confirmButton" class="px-4 py-2 text-white text-base font-medium rounded-md w-24 mr-2 transition-colors">
+                    Sim
+                </button>
+                <button id="cancelButton" class="px-4 py-2 bg-gray-300 text-gray-800 text-base font-medium rounded-md w-24 hover:bg-gray-400 transition-colors" onclick="closeModal()">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
+let currentAction = null;
+
 function submitForm(action) {
+    currentAction = action;
+    const modal = document.getElementById('confirmationModal');
+    const modalIcon = document.getElementById('modalIcon');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalMessage = document.getElementById('modalMessage');
+    const confirmButton = document.getElementById('confirmButton');
+    
     if (action === 'accept') {
-        if (confirm('Você tem certeza de que deseja ACEITAR este empréstimo? Esta ação não pode ser desfeita.')) {
-            document.getElementById('actionInput').value = 'accept';
-            document.getElementById('acceptanceForm').submit();
-        }
+        modalIcon.innerHTML = '<svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+        modalIcon.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-4 bg-green-100';
+        modalTitle.textContent = 'Aceitar Empréstimo';
+        modalMessage.textContent = 'Você tem certeza de que deseja ACEITAR este empréstimo? Esta ação não pode ser desfeita e você se compromete a pagar todas as parcelas conforme acordado.';
+        confirmButton.className = 'px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-base font-medium rounded-md w-24 mr-2 transition-colors';
+        confirmButton.textContent = 'Aceitar';
     } else if (action === 'reject') {
-        if (confirm('Você tem certeza de que deseja RECUSAR este empréstimo?')) {
-            document.getElementById('actionInput').value = 'reject';
-            document.getElementById('acceptanceForm').submit();
-        }
+        modalIcon.innerHTML = '<svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
+        modalIcon.className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-4 bg-red-100';
+        modalTitle.textContent = 'Recusar Empréstimo';
+        modalMessage.textContent = 'Você tem certeza de que deseja RECUSAR este empréstimo? Esta oportunidade não estará mais disponível após a recusa.';
+        confirmButton.className = 'px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-base font-medium rounded-md w-24 mr-2 transition-colors';
+        confirmButton.textContent = 'Recusar';
+    }
+    
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+    const modal = document.getElementById('confirmationModal');
+    modal.classList.add('hidden');
+    document.body.style.overflow = 'auto';
+    currentAction = null;
+}
+
+function confirmAction() {
+    if (currentAction) {
+        // Mostrar loading
+        const confirmButton = document.getElementById('confirmButton');
+        const originalText = confirmButton.textContent;
+        confirmButton.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Processando...';
+        confirmButton.disabled = true;
+        
+        document.getElementById('actionInput').value = currentAction;
+        document.getElementById('acceptanceForm').submit();
     }
 }
+
+// Event listener para o botão de confirmação
+document.getElementById('confirmButton').addEventListener('click', confirmAction);
+
+// Fechar modal ao clicar fora dele
+document.getElementById('confirmationModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeModal();
+    }
+});
+
+// Fechar modal com ESC
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeModal();
+    }
+});
 </script>
 <?= $this->endSection() ?>

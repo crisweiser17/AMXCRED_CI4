@@ -402,10 +402,15 @@ class LoansController extends BaseController
             $loan['installment_amount_formatted'] = 'R$ ' . number_format($loan['installment_amount'], 2, ',', '.');
             $loan['token_expires_at_formatted'] = date('d/m/Y H:i', strtotime($loan['token_expires_at']));
             
+            // Buscar termos e condições das configurações do sistema
+            $settingModel = new \App\Models\SettingModel();
+            $termsAndConditions = $settingModel->getSetting('system_messages', 'loan_terms_conditions');
+            
             $data = [
                 'title' => 'Aceitar Empréstimo - AMX Cred',
                 'loan' => $loan,
-                'token' => $token
+                'token' => $token,
+                'termsAndConditions' => $termsAndConditions
             ];
             
             return view('loans/accept_confirmation', $data);
@@ -464,7 +469,67 @@ class LoansController extends BaseController
      */
     public function acceptanceSuccess()
     {
-        return view('loans/acceptance_success');
+        try {
+            // Carregar configurações de mensagens do sistema
+            $settingModel = new \App\Models\SettingModel();
+            
+            // Verificar se é aceitação ou recusa baseado na mensagem da sessão
+            $sessionMessage = session('info') ?? session('success');
+            $isRejection = strpos($sessionMessage, 'recusado') !== false || strpos($sessionMessage, 'Obrigado pelo seu tempo') !== false;
+            
+            if ($isRejection) {
+                // Configurações para recusa
+                $title = $settingModel->getSetting('system_messages', 'loan_rejection_success_title') ?: 'Empréstimo Recusado';
+                $message = $settingModel->getSetting('system_messages', 'loan_rejection_success_message') ?: 'Empréstimo recusado. Obrigado pelo seu tempo.';
+                $nextSteps = '';
+            } else {
+                // Configurações para aceitação
+                $title = $settingModel->getSetting('system_messages', 'loan_acceptance_success_title') ?: 'Empréstimo Aceito!';
+                $message = $settingModel->getSetting('system_messages', 'loan_acceptance_success_message') ?: 'Seu empréstimo foi aceito com sucesso.';
+                $nextSteps = $settingModel->getSetting('system_messages', 'loan_acceptance_success_next_steps') ?: 'Aguarde o financiamento do seu empréstimo. Você será notificado quando o valor estiver disponível.';
+            }
+            
+            $data = [
+                'title' => $title,
+                'message' => $message,
+                'nextSteps' => $nextSteps,
+                'isRejection' => $isRejection
+            ];
+            
+            return view('loans/acceptance_success', $data);
+            
+        } catch (\Exception $e) {
+            log_message('error', 'Erro em LoansController::acceptanceSuccess: ' . $e->getMessage());
+            return view('loans/acceptance_success');
+        }
+    }
+
+    /**
+     * Página de sucesso após recusar empréstimo
+     */
+    public function rejectionSuccess()
+    {
+        try {
+            // Carregar configurações de mensagens do banco de dados
+            $settingModel = new \App\Models\SettingModel();
+            
+            $data = [
+                'title' => $settingModel->getSetting('system_messages', 'loan_rejection_success_title') ?? 'Empréstimo Recusado',
+                'message' => $settingModel->getSetting('system_messages', 'loan_rejection_success_message') ?? 'Empréstimo recusado. Obrigado pelo seu tempo.'
+            ];
+            
+            return view('loans/rejection_success', $data);
+        } catch (\Exception $e) {
+            log_message('error', 'Erro ao carregar página de recusa: ' . $e->getMessage());
+            
+            // Fallback com valores padrão
+            $data = [
+                'title' => 'Empréstimo Recusado',
+                'message' => 'Empréstimo recusado. Obrigado pelo seu tempo.'
+            ];
+            
+            return view('loans/rejection_success', $data);
+        }
     }
 
     /**
@@ -472,7 +537,24 @@ class LoansController extends BaseController
      */
     public function acceptanceError()
     {
-        return view('loans/acceptance_error');
+        try {
+            // Carregar configurações de mensagens do sistema
+            $settingModel = new \App\Models\SettingModel();
+            
+            $title = $settingModel->getSetting('system_messages', 'loan_acceptance_error_title') ?: 'Erro na Aceitação';
+            $message = $settingModel->getSetting('system_messages', 'loan_acceptance_error_message') ?: 'Não foi possível aceitar o empréstimo.';
+            
+            $data = [
+                'title' => $title,
+                'message' => $message
+            ];
+            
+            return view('loans/acceptance_error', $data);
+            
+        } catch (\Exception $e) {
+            log_message('error', 'Erro em LoansController::acceptanceError: ' . $e->getMessage());
+            return view('loans/acceptance_error');
+        }
     }
     
     /**

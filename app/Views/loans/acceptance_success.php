@@ -10,11 +10,11 @@
                 </div>
                 
                 <h2 class="mt-6 text-3xl font-extrabold text-gray-900">
-                    Empréstimo Aceito!
+                    <?= esc($title ?? 'Empréstimo Aceito!') ?>
                 </h2>
                 
                 <p class="mt-2 text-sm text-gray-600">
-                    Seu empréstimo foi aceito com sucesso.
+                    <?= esc($message ?? 'Seu empréstimo foi aceito com sucesso.') ?>
                 </p>
             </div>
             
@@ -24,7 +24,7 @@
                         <i class="fas fa-info-circle text-green-600 mr-3"></i>
                         <div class="text-sm text-green-800">
                             <strong>Próximos passos:</strong><br>
-                            Aguarde o financiamento do seu empréstimo. Você será notificado quando o valor estiver disponível.
+                            <?= esc($nextSteps ?? 'Aguarde o financiamento do seu empréstimo. Você será notificado quando o valor estiver disponível.') ?>
                         </div>
                     </div>
                     

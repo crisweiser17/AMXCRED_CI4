@@ -53,6 +53,8 @@ $routes->group('settings', function($routes) {
     $routes->post('test-smtp', 'SettingsController::testSmtp');
     $routes->get('colors', 'SettingsController::colors');
     $routes->get('payment', 'SettingsController::payment');
+    $routes->get('timezone', 'SettingsController::timezone');
+    $routes->post('save-timezone', 'SettingsController::saveTimezone');
     
     // Rotas para Planos de Empréstimo
     $routes->get('loan-plans', 'SettingsController::loanPlans');
@@ -64,6 +66,10 @@ $routes->group('settings', function($routes) {
     $routes->put('loan-plans/update/(:num)', 'SettingsController::updateLoanPlan/$1');
     $routes->post('loan-plans/toggle-status/(:num)', 'SettingsController::toggleLoanPlanStatus/$1');
     $routes->delete('loan-plans/delete/(:num)', 'SettingsController::deleteLoanPlan/$1');
+    
+    // Rotas para Mensagens do Sistema
+    $routes->get('system-messages', 'SettingsController::systemMessages');
+    $routes->post('save-system-messages', 'SettingsController::saveSystemMessages');
     
     // Rota de debug temporária
     $routes->get('loan-plans/debug/(:num)', 'SettingsControllerDebug::viewLoanPlanDebug/$1');
@@ -95,6 +101,7 @@ $routes->get('/loans/accept/(:segment)', 'LoansController::accept/$1'); // Adici
 $routes->post('/loans/process-acceptance', 'LoansController::processAcceptance');
 $routes->get('/loan-acceptance-success', 'LoansController::acceptanceSuccess');
 $routes->get('/loans/acceptance-success', 'LoansController::acceptanceSuccess'); // Adicionado para compatibilidade
+$routes->get('/loans/rejection-success', 'LoansController::rejectionSuccess'); // Página específica para recusa
 $routes->get('/loan-acceptance-error', 'LoansController::acceptanceError');
 $routes->get('/loans/acceptance-error', 'LoansController::acceptanceError'); // Adicionado para compatibilidade com redirecionamentos
 $routes->get('/loans/cancel/(:num)', 'LoansController::cancel/$1'); // Adicionado para compatibilidade com cancelamento
@@ -109,5 +116,6 @@ $routes->get('/loan-simple/view/(:num)', 'LoanPlansSimple::view/$1');
 
 // Rotas Públicas (sem autenticação)
 $routes->get('/register', 'PublicController::register');
+$routes->post('/register', 'PublicController::store');
 $routes->post('/register/store', 'PublicController::store');
 $routes->get('/register/success', 'PublicController::success');

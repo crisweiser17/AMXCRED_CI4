@@ -10,11 +10,11 @@
                 </div>
                 
                 <h2 class="mt-6 text-3xl font-extrabold text-gray-900">
-                    Erro na Aceitação
+                    <?= esc($title ?? 'Erro na Aceitação') ?>
                 </h2>
                 
                 <p class="mt-2 text-sm text-gray-600">
-                    Não foi possível aceitar o empréstimo.
+                    <?= esc($message ?? 'Não foi possível aceitar o empréstimo.') ?>
                 </p>
             </div>
             
