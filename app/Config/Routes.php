@@ -71,6 +71,10 @@ $routes->group('settings', function($routes) {
     $routes->get('system-messages', 'SettingsController::systemMessages');
     $routes->post('save-system-messages', 'SettingsController::saveSystemMessages');
     
+    // Rotas para Informações da Empresa
+    $routes->get('company-info', 'SettingsController::companyInfo');
+    $routes->post('save-company-info', 'SettingsController::saveCompanyInfo');
+    
     // Rota de debug temporária
     $routes->get('loan-plans/debug/(:num)', 'SettingsControllerDebug::viewLoanPlanDebug/$1');
     

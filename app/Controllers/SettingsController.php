@@ -994,4 +994,114 @@ class SettingsController extends BaseController
             </li>
         </ul>';
     }
+
+    /**
+     * Configurações de Informações da Empresa
+     */
+    public function companyInfo()
+    {
+        // Buscar informações atuais da empresa
+        $companyInfo = [
+            'company_name' => $this->settingModel->getSetting('company_info', 'company_name') ?? 'AMX Cred',
+            'company_slogan' => $this->settingModel->getSetting('company_info', 'company_slogan') ?? 'Empréstimos Rápidos e Seguros',
+            'company_email' => $this->settingModel->getSetting('company_info', 'company_email') ?? 'contato@amxcred.com.br',
+            'company_whatsapp' => $this->settingModel->getSetting('company_info', 'company_whatsapp') ?? '(11) 99999-9999',
+            'company_phone' => $this->settingModel->getSetting('company_info', 'company_phone') ?? '(11) 3333-3333',
+            'company_logo' => $this->settingModel->getSetting('company_info', 'company_logo') ?? ''
+        ];
+
+        $data = array_merge([
+            'title' => 'Informações da Empresa'
+        ], $companyInfo);
+
+        return view('settings/company_info', $data);
+    }
+
+    /**
+     * Salva configurações de Informações da Empresa
+     */
+    public function saveCompanyInfo()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back()->with('error', 'Requisição inválida');
+        }
+
+        $settings = [
+            'company_name' => $this->request->getPost('company_name'),
+            'company_slogan' => $this->request->getPost('company_slogan'),
+            'company_email' => $this->request->getPost('company_email'),
+            'company_whatsapp' => $this->request->getPost('company_whatsapp'),
+            'company_phone' => $this->request->getPost('company_phone'),
+            'company_logo' => $this->request->getPost('company_logo')
+        ];
+        
+        // Validações básicas
+        if (empty($settings['company_name'])) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Nome da empresa é obrigatório'
+            ]);
+        }
+
+        if (!empty($settings['company_email']) && !filter_var($settings['company_email'], FILTER_VALIDATE_EMAIL)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'E-mail inválido'
+            ]);
+        }
+
+        if (!empty($settings['company_logo']) && !filter_var($settings['company_logo'], FILTER_VALIDATE_URL)) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'URL do logo inválida'
+            ]);
+        }
+        
+        try {
+            $success = true;
+            
+            // Salvar todas as configurações
+            foreach ($settings as $key => $value) {
+                $description = $this->getCompanyInfoDescription($key);
+                if (!$this->settingModel->setSetting('company_info', $key, $value, $description)) {
+                    $success = false;
+                    break;
+                }
+            }
+            
+            if ($success) {
+                return $this->response->setJSON([
+                    'success' => true,
+                    'message' => 'Informações da empresa atualizadas com sucesso!'
+                ]);
+            } else {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Erro ao salvar informações da empresa'
+                ]);
+            }
+        } catch (\Exception $e) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Erro interno: ' . $e->getMessage()
+            ]);
+        }
+    }
+    
+    /**
+     * Retorna a descrição para cada configuração de informações da empresa
+     */
+    private function getCompanyInfoDescription($key)
+    {
+        $descriptions = [
+            'company_name' => 'Nome da empresa exibido no layout público',
+            'company_slogan' => 'Slogan da empresa exibido no cabeçalho do layout público',
+            'company_email' => 'E-mail de contato exibido no rodapé do layout público',
+            'company_whatsapp' => 'Número do WhatsApp exibido no rodapé do layout público',
+            'company_phone' => 'Telefone de contato exibido no rodapé do layout público',
+            'company_logo' => 'URL do logo da empresa exibido no cabeçalho do layout público'
+        ];
+        
+        return $descriptions[$key] ?? 'Configuração de informações da empresa';
+    }
 }
